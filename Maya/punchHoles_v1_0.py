@@ -1,3 +1,6 @@
+### Created by John Kesig
+### v1.0 
+
 import maya.cmds as mc
 
 class punchHolesUI(object):
