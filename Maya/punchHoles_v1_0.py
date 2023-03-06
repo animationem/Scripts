@@ -1,6 +1,3 @@
-### Created by John Kesig
-### v1.0 
-
 import maya.cmds as mc
 
 class punchHolesUI(object):
@@ -16,7 +13,7 @@ class punchHolesUI(object):
 
         #Bevel
         self.ph_bevel_text = mc.text(label='Bevel')
-        self.ph_bevel_fraction = mc.floatSliderGrp(label='Fraction', field=True, minValue=0.0, maxValue=1.0, value=0.2)
+        self.ph_bevel_fraction = mc.floatSliderGrp(label='Fraction', field=True, precision=3, minValue=0.0, maxValue=1.0, value=0.2)
         self.ph_bevel_divisions = mc.intSliderGrp(label='Divisions', field=True, minValue=1, maxValue=5, value=1)
         self.ph_bevel_chamfer = mc.checkBoxGrp(label='Chamfer  ', numberOfCheckBoxes=1)
 
