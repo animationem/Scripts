@@ -226,8 +226,16 @@ class punchHolesUI(object):
             #Select the center vertex in the star formation, chamfer the vertex, and circularize the components
             mc.polySelectConstraint(mode=3, type=0x0001, order=1, orderbound=(8,20))
             mc.polyExtrudeVertex(width=0.25)
+            
+            #Circularize components wasn't working as intended in versions of Maya previous to 2023. This should fix that
+            version = int(mc.about(mjv=1))
             pvh_circ_offset = mc.floatSliderGrp(self.ph_circ_offset, query=True, value=True)
-            mc.polyCircularize(radialOffset=pvh_circ_offset)
+            
+            if version < 2023:
+                mc.polyCircularizeEdge(radialOffset=pvh_circ_offset)
+            else:
+                mc.polyCircularize(radialOffset=pvh_circ_offset)
+            
             mc.polySelectConstraint(mode=0, size=0)
             
             #Select faces that have triangles and store them in a variable
