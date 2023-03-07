@@ -5,42 +5,32 @@
 
 class utilityScripts(object):
     def __init__(self):
-        self.us_window = mc.window(title='Utility Scripts')
-        self.us_layout = mc.formLayout(numberOfDivisions=30)
+        us_window = mc.window(title='Utility Scripts')
+        us_form = mc.formLayout(numberOfDivisions=30)
+        us_tabs = mc.tabLayout(innerMarginWidth=5, innerMarginHeight=5)
+        mc.formLayout(us_form, edit=True, attachForm=[(us_tabs, 'top', 2), (us_tabs, 'left', 3), (us_tabs, 'bottom', 0),(us_tabs, 'right', 3)])
         
-        # Arnold Render Settings
-        self.us_aiSettings_text = mc.text(label='Arnold Mesh Settings')
+        # Arnold
+        us_tab_arnold = mc.rowColumnLayout(numberOfColumns=1)
         
-        # Arnold Subdivisions
-        self.us_aiSubdiv_check = mc.checkBoxGrp(label='Turn on Subdivisions? ', numberOfCheckBoxes=1)
-        
-        self.us_aiSubdiv_iterations = mc.intSliderGrp(label='Arnold Subdiv Iterations', field=True, minValue=1, maxValue=7, value=1)
+        # aiSubdivisions
+        mc.separator(style='single', height=5, visible=False)
+        mc.text(label='Subdivide')
+        mc.separator(style='single', height=5, visible=True)
+        self.us_aiSubdiv_check = mc.checkBoxGrp(label='Turn on Subdivisions? ', numberOfCheckBoxes=1, columnAttach=[1,'left', 3])
+        mc.separator(style='single', height=2, visible=False)
+        self.us_aiSubdiv_iterations = mc.intSliderGrp(label='Arnold Subdiv Iterations', field=True, columnAttach=[1,'left', 3], minValue=1, maxValue=7, value=1)
+        mc.separator(style='single', height=10, visible=False)
         self.us_aiSubdiv_button = mc.button(label='Subdivide', recomputeSize=True, command=self.subdivideArnold)
+        mc.setParent('..')
         
-        # Turn off objects
+        # prman
+        us_tab_prman = mc.rowColumnLayout(numberOfColumns=1)
+        mc.text(label='Not yet worked out')
         
-        # Separators
-        self.us_separator01 = mc.separator(style='none')
+        mc.tabLayout( us_tabs, edit=True, tabLabel=((us_tab_arnold, 'Arnold'), (us_tab_prman, 'Renderman')) )
         
-        mc.formLayout(self.us_layout, edit=True,
-            attachForm = [ (self.us_aiSettings_text, 'top', 5), 
-                          (self.us_aiSubdiv_check, 'left', 5),
-                          (self.us_aiSubdiv_iterations, 'left', 5), (self.us_aiSubdiv_iterations, 'right', 5)
-                          ],
-            
-            attachControl = [(self.us_separator01, 'top', 5, self.us_aiSettings_text),
-                             (self.us_aiSubdiv_check, 'top', 5, self.us_separator01),
-                             (self.us_aiSubdiv_iterations, 'top', 5, self.us_aiSubdiv_check),
-                             (self.us_aiSubdiv_button, 'top', 5, self.us_aiSubdiv_iterations)
-                            
-                             ],
-            
-            attachPosition = [(self.us_aiSubdiv_button, 'left', 0, 15)
-                              ]
-            )
-    
-        
-        mc.showWindow(self.us_window)
+        mc.showWindow(us_window)
     
     def subdivideArnold(self, *args):
         selection = mc.ls(sl=True)
@@ -53,6 +43,9 @@ class utilityScripts(object):
             for sel in selection:
                 mc.setAttr("{0}.aiSubdivType".format(sel), 1)
                 mc.setAttr("{0}.aiSubdivIterations".format(sel), aiSubdiv_iterations)
+        else: 
+            for sel in selection:
+                mc.setAttr("{0}.aiSubdivType".format(sel), 0)
         
         return
         
