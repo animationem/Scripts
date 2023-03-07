@@ -1,9 +1,14 @@
+# Punch Holes Script v1.0
+# Created by John Kesig
+# Compatibility Versions for Maya 2022 & 2023
+# Python 3 
+
 import maya.cmds as mc
 
 class punchHolesUI(object):
     def __init__(self):
         #Create Script Window
-        self.ph_window = mc.window(title='Punch Holes v1.0', menuBar=True)
+        self.ph_window = mc.window(title='Punch Holes', menuBar=True)
         self.ph_layout = mc.formLayout(numberOfDivisions=100)
 
         #Create variables for User Control Settings
