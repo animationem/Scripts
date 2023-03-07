@@ -166,7 +166,12 @@ class punchHolesUI(object):
             #Chamfer the vertice and circularize the components
             mc.polyExtrudeVertex(width = 0.25)
             pfh_circ_offset=mc.floatSliderGrp(self.ph_circ_offset, query=True, value=True)
-            mc.polyCircularize(radialOffset=pfh_circ_offset)
+            
+            version = int(mc.about(mjv=True))
+            if version < 2023:
+                mc.polyCircularizeEdge(radialOffset=pfh_circ_offset)
+            else:
+                mc.polyCircularize(radialOffset=pfh_circ_offset)
             
             #Select the inner triangular faces and store in them in a variable, then remove the constraint
             mc.polySelectConstraint(dis=True, mode=3, type=0x0008, size=1)
@@ -228,7 +233,7 @@ class punchHolesUI(object):
             mc.polyExtrudeVertex(width=0.25)
             
             #Circularize components wasn't working as intended in versions of Maya previous to 2023. This should fix that
-            version = int(mc.about(mjv=1))
+            version = int(mc.about(mjv=True))
             pvh_circ_offset = mc.floatSliderGrp(self.ph_circ_offset, query=True, value=True)
             
             if version < 2023:
