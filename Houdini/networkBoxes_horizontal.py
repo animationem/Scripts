@@ -1,7 +1,7 @@
 import hou
 root = hou.node('/obj/')
 
-# This should be added to the 123.py script in your Houdini Documents folder. On Windows it is: "C:\Users\(User)\Documents\houdini19.0\scripts\123.py"
+# This should be added to the 123.py script in your Houdini Documents folder. On Windows it is: "C:\Users\(User)\Documents\(houdini_Version)\scripts\123.py"
 # On Linux this most likely located in your home folder: /home/(user)/(houdini_version)/scripts/123.py
 # If the scripts folder isn't there, go ahead and create it. Same goes for the 123.py
 
