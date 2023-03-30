@@ -10,7 +10,7 @@ nw_boxes = {'Import' : (), 'Geo' : (0.6, 1, 0.25), 'Lighting' : (0.75, 0.75, 0),
 nb_count = len(nw_boxes)
 pos = 10
 
-# Create Vertical Network Boxes, set poitions and colors
+# Create Vertical Network Boxes, set size, comment, positions, and colors
 for key, value in nw_boxes.items():
     nb = root.createNetworkBox(name=key)
     nb.setComment(key)
