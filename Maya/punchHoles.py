@@ -24,6 +24,7 @@ class punchHolesUI(object):
 
         #Extrude
         self.ph_ext_text = mc.text(label='Extrude')
+        self.ph_ext_check = mc.checkBoxGrp(label='Extrude?  ', numberOfCheckBoxes=1)
         self.ph_ext_thickness = mc.floatSliderGrp(label='Thickness', field=True, minValue=-100.0, maxValue=100.0, fieldMinValue=-1000.0, fieldMaxValue=1000.0, value=-10.0)
         self.ph_ext_divisions = mc.intSliderGrp(label='Divisions', field=True, minValue=1, maxValue=5, value=1)
         self.ph_ext_offset = mc.floatSliderGrp(label='Offset', field=True, minValue=-100.0, maxValue=100.0, fieldMinValue=-1000.0, fieldMaxValue=1000.0, value=0.0)
@@ -32,6 +33,7 @@ class punchHolesUI(object):
         self.pvh_button = mc.button(label='Punch Holes by Vertex', backgroundColor=[0.25,0.36,0.466], command=self.punchVertHoles)
         self.pfh_button = mc.button(label='Punch Holes by Face', backgroundColor=[0.25,0.46,0.36], command=self.punchFaceHoles)
         self.b_button = mc.button(label='Bevel Edges', backgroundColor=[0.67,0.29,0.29], command=self.ph_Bevel)
+        self.e_button = mc.button(label='Extrude', backgroundColor=[0.80,0.80,1.00], command=self.ph_extrude)
         
         #Create Separators
         self.ph_circ_sep = mc.separator(h=5)
@@ -45,6 +47,7 @@ class punchHolesUI(object):
                                     (self.ph_circ_sep, 'top', 5),(self.ph_circ_sep, 'left', 5), (self.ph_circ_sep, 'right', 5),
                                     
                                     (self.ph_ext_text, 'left', 5),
+                                    (self.ph_ext_check, 'left', 5),
                                     (self.ph_ext_thickness, 'left', 5), (self.ph_ext_thickness, 'right', 5),
                                     (self.ph_ext_divisions, 'left', 5), (self.ph_ext_divisions, 'right', 5),
                                     (self.ph_ext_offset, 'left', 5), (self.ph_ext_offset, 'right', 5),
@@ -59,6 +62,7 @@ class punchHolesUI(object):
                                     (self.ph_bevel_sep, 'top', 5),(self.ph_bevel_sep, 'left', 5), (self.ph_bevel_sep, 'right', 5),
                                     (self.pvh_button, 'bottom', 5), (self.pvh_button, 'left', 5), (self.pvh_button, 'right', 5),
                                     (self.pfh_button, 'bottom', 5), (self.pfh_button, 'left', 5), (self.pfh_button, 'right', 5),
+                                    (self.e_button, 'bottom', 5), (self.e_button, 'left', 5), (self.e_button, 'right', 5),
                                     (self.b_button, 'bottom', 5), (self.b_button, 'left', 5), (self.b_button, 'right', 5),
                     ],
                 
@@ -66,7 +70,8 @@ class punchHolesUI(object):
                                         (self.ph_circ_sep,'top', 5, self.ph_circ_offset),
                                         
                                         (self.ph_ext_text, 'top', 5, self.ph_circ_sep),
-                                        (self.ph_ext_thickness, 'top', 5, self.ph_ext_text),
+                                        (self.ph_ext_check, 'top', 5, self.ph_ext_text),
+                                        (self.ph_ext_thickness, 'top', 5, self.ph_ext_check),
                                         (self.ph_ext_divisions, 'top', 5, self.ph_ext_thickness),
                                         (self.ph_ext_offset, 'top', 5, self.ph_ext_divisions),
                                         (self.ph_ext_sep, 'top', 5, self.ph_ext_offset),
@@ -79,12 +84,14 @@ class punchHolesUI(object):
                                         
                                         (self.pvh_button, 'top', 5, self.ph_bevel_sep),
                                         (self.pfh_button, 'top', 5, self.ph_bevel_sep),
-                                        (self.b_button, 'top', 5, self.pvh_button)                               
+                                        (self.e_button, 'top', 5, self.pvh_button),
+                                        (self.b_button, 'top', 5, self.e_button),
                     ],
                     
-                    attachPosition = [                                       
+                    attachPosition = [                                 
                                         (self.pvh_button, 'left', 5, 50), (self.pvh_button, 'bottom', 5, 65),
                                         (self.pfh_button, 'right', 5, 50),
+                                        (self.e_button, 'left', 5, 50), (self.e_button, 'bottom', 5, 35),
                                         (self.b_button, 'left', 5, 50)                   
                     ]
                     )
@@ -108,6 +115,7 @@ class punchHolesUI(object):
                 '\n\n\n\nThanks for using it!',
             button=['Done'],
             cancelButton='Done')
+        return
         
     def docs_help(self, *args):
         doc_help = mc.confirmDialog(
@@ -140,6 +148,8 @@ class punchHolesUI(object):
             '\n\n\n\n\nWhat\'s your favorite video game?',
             button=['Done'],
             cancelButton='Done')
+            
+        return
         
         
     def punchFaceHoles(self, *args):
@@ -262,36 +272,46 @@ class punchHolesUI(object):
             mc.select(pvh_blastFace)
             mc.polyDelFacet()
             mc.polySelectConstraint(mode=0, size=0)
+        
+        return
 
-            #Select all the quad faces from the object and store them in a variable so that we can store the border edges in another variable
-            mc.polySelectConstraint(mode=3, type=0x0008, size=2)
-            pvh_bExtFaces = mc.ls(sl=True)
-            pvh_bExtEdges = mc.polyListComponentConversion(pvh_bExtFaces, ff=True, te=True, bo=True)
+    def ph_extrude(self, *args):
+        
+        #Select all the quad faces from the object and store them in a variable so that we can store the border edges in another variable
+        mc.polySelectConstraint(mode=3, type=0x0008, size=2)
+        pvh_bExtFaces = mc.ls(sl=True)
+        pvh_bExtEdges = mc.polyListComponentConversion(pvh_bExtFaces, ff=True, te=True, bo=True)
             
-            #Extrude the quad faces and store the extruded faces in a new variable and the new extruded border edges in a new variable 
-            pvh_ext_thickness = mc.floatSliderGrp(self.ph_ext_thickness, query=True, value=True)
-            pvh_ext_divisions = mc.intSliderGrp(self.ph_ext_divisions, query=True, value=True)
-            pvh_ext_offset = mc.floatSliderGrp(self.ph_ext_offset, query=True, value=True)
+        #Extrude the quad faces and store the extruded faces in a new variable and the new extruded border edges in a new variable 
+        pvh_ext_check = mc.checkBoxGrp(self.ph_ext_check, query=True, value1=True)
+        pvh_ext_thickness = mc.floatSliderGrp(self.ph_ext_thickness, query=True, value=True)
+        pvh_ext_divisions = mc.intSliderGrp(self.ph_ext_divisions, query=True, value=True)
+        pvh_ext_offset = mc.floatSliderGrp(self.ph_ext_offset, query=True, value=True)
+        
+        
+        #Don't extrude if thickness is 0. This is to prevent issues with the mesh
+        if pvh_ext_thickness == 0:
+            return
+        
+        if pvh_ext_check == 1:
             mc.polyExtrudeFacet(thickness=pvh_ext_thickness, divisions=pvh_ext_divisions, offset=pvh_ext_offset)
             pvh_extGeo = mc.ls(sl=True)
             pvh_extEdges = mc.polyListComponentConversion(pvh_extGeo, ff=True, te=True, bo=True)
             
-            #Reverse Normals if Extrusion Thickness is below 0
+             #Reverse Normals if Extrusion Thickness is below 0
             if pvh_ext_thickness < 0:
-                mc.polySelectConstraint(mode=3, type=0x0008, size=2)
-                mc.polyNormal(normalMode=0)
-            
+                 mc.polySelectConstraint(mode=3, type=0x0008, size=2)
+                 mc.polyNormal(normalMode=0)
+     
             #Select all of the border edges from the variables we have declared and bevel them
-            mc.select(pvh_bExtEdges + pvh_extEdges)
+        mc.select(pvh_bExtEdges + pvh_extEdges)
             
-            mc.polySelectConstraint(mode=0, w=0)
-        
-        
+        mc.polySelectConstraint(mode=0, w=0)
+            
         return
-
-
+    
     def ph_Bevel(self, *args):
-        #Gathe the attributes you need from the UI, and apply them to the Bevel command
+        #Gather the attributes you need from the UI, and apply them to the Bevel command
         ph_b_chamfer = mc.checkBoxGrp(self.ph_bevel_chamfer, query=True, value1=True)
         ph_b_fraction = mc.floatSliderGrp(self.ph_bevel_fraction, query=True, value=True)
         ph_b_divisions = mc.intSliderGrp(self.ph_bevel_divisions, query=True, value=True)
