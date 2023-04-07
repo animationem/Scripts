@@ -1,12 +1,20 @@
 import hou
+from collections import OrderedDict
+
 root = hou.node('/obj/')
 
-# This should be added to the 123.py script in your Houdini Documents folder. On Windows it is: "C:\Users\(User)\Documents\(houdini_version)\scripts\123.py"
-# On Linux this most likely located in your home folder: /home/(user)/(houdini_version)/scripts/123.py
-# If the scripts folder isn't there, go ahead and create it. Same goes for the 123.py
+# Create the dictionary that will be ordered by first come first serve
+nw_boxes = OrderedDict()
 
-nw_boxes = {'Import' : (), 'Geo' : (0.6, 1, 0.25), 'Lighting' : (0.75, 0.75, 0), 'FX' : (0, 0.35, 0.75), 'Render' : (0.37, 0.205, 1)}
-pos = -10
+# Create the keys and values that will be added to the dictionary variable above
+nw_boxes["Assets"] = (0.281, 0.281, 0.278)
+nw_boxes["GEO"] = (0.529, 0.596, 0.415)
+nw_boxes["LGT"] = (0.980, 0.898, 0.533)
+nw_boxes["FX"] = (0.455, 0.580, 0.917)
+nw_boxes["RENDER"] = (0.709, 0.611, 0.882)
+
+# The network boxes will start at this position in the network
+pos = -16
 
 # Create Vertical Network Boxes, set size, comment, positions, and colors
 for key, value in nw_boxes.items():
