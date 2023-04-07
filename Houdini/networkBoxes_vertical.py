@@ -3,7 +3,13 @@ import hou
 root = hou.node('/obj/')
 
 # Create the dictionary that will store the key and value pairs
-nw_boxes = {'ASSETS': (0.281, 0.281, 0.278), 'GEO': (0.529, 0.596, 0.415), 'LGT': (0.980, 0.898, 0.533), 'FX': (0.455, 0.580, 0.917), 'RENDER': (0.709, 0.611, 0.882)}
+nw_boxes = {
+            'ASSETS': (0.281, 0.281, 0.278), 
+            'GEO': (0.529, 0.596, 0.415), 
+            'LGT': (0.980, 0.898, 0.533), 
+            'FX': (0.455, 0.580, 0.917), 
+            'RENDER': (0.709, 0.611, 0.882)
+            }
 
 # Set the order by which the network boxes will be generated
 nw_order = ['ASSETS', 'GEO', 'LGT', 'FX', 'RENDER']
