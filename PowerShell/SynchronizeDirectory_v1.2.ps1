@@ -129,5 +129,5 @@ if($scriptPath -eq $null)
     [System.Windows.Forms.MessageBox]::Show('Your Sync Script has already been created. Check your SyncScripts folder')
 } else {
     $task = CreateTask($sourceShortName,$destinationShortName,$scriptPath)
-    [System.Windows.Forms.MessageBox]::Show('Your files have been synchronized and your Sync Task has been generated. Please go to Task Scheduler to see your sync job')
+    [System.Windows.Forms.MessageBox]::Show('Your Sync Task has been generated. Please go to Task Scheduler to see your sync job. A log will be generated the next time the task is run')
 }
