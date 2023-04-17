@@ -59,7 +59,7 @@ Function CreateSyncScript($syncScriptPath='')
     }
 
     # This is the script that will be run by Powershell to synchronize the two locations
-    $script = 'robocopy {0} {1} *.* -e /v /tee /log:{2}{3}.txt' -f $sourceLocation,$destinationLocation,$logDirectory,$logName
+    $script = 'robocopy {0} {1} *.* -e /v /tee /log+:{2}{3}.txt' -f $sourceLocation,$destinationLocation,$logDirectory,$logName
 
     # Test to see if the sync script file already exists. If it doesn't, it will create the file
     $testPath = Test-Path -PathType Leaf -Path $scriptDirectory$sourceShortName.ps1
