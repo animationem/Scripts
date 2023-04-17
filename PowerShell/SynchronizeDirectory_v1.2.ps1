@@ -39,15 +39,13 @@ Function CreateSyncScript($syncScriptPath='')
     $destinationLocation = $destination 
     $destinationLocation = $destinationLocation -replace ' ', '` '
 
-    # Get Date and Time for logging
-    $date = Get-Date -Format 'MMddyyyHHmm'
-    $logName = '{0} Copy Log - {1}' -f $shortname,$date
+    # Create Log Name
+    $logName = '{0} Copy Log' -f $shortname
     $logName = $logName -replace ' ', '` '
 
     # This is where the powershell script will be stored. Feel free to change this if you want
     $scriptDirectory = 'C:\SyncScripts\'
     $logDirectory = 'C:\SyncScripts\Logs\'
-    $reportDirectory = '{0}{1}\' -f $logDirectory,$shortname
     
     # Test if the Script Directory exists. If it doesn't, it will create it.
     if(!(Test-Path -PathType Container $scriptDirectory))
@@ -60,13 +58,8 @@ Function CreateSyncScript($syncScriptPath='')
         New-Item -ItemType Directory -Path $logDirectory
     }
 
-    if(!(Test-Path -PathType Container $reportDirectory))
-    {
-        New-Item -ItemType Directory -Path $reportDirectory
-    }
-
     # This is the script that will be run by Powershell to synchronize the two locations
-    $script = 'robocopy {0} {1} *.* -e /v /tee /log:{2}{3}.txt' -f $sourceLocation,$destinationLocation,$reportDirectory,$logName
+    $script = 'robocopy {0} {1} *.* -e /v /tee /log:{2}{3}.txt' -f $sourceLocation,$destinationLocation,$logDirectory,$logName
 
     # Test to see if the sync script file already exists. If it doesn't, it will create the file
     $testPath = Test-Path -PathType Leaf -Path $scriptDirectory$sourceShortName.ps1
@@ -120,7 +113,7 @@ $destinationShortName = $destination|Split-Path -Leaf
 
 # Create the sync script that will be run for Task Scheduler
 $syncScript = CreateSyncScript($source,$destination,$sourceShortName)
-$scriptPath = $syncScript[2]
+$scriptPath = $syncScript[1]
 
 # Check to see if the $syncScript variable doesn't come back empty. IF it does then it prompts the user that a script has already been created
 # If the script comes back with a path, it will create the task and prompt the user that everything has been completed
