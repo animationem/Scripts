@@ -57,7 +57,7 @@ def get_houdini_color_scheme(file_path):
 hip = hou.homeHoudiniDirectory()
 pref = 'ui.pref'
 file = os.path.join(hip, pref)
-dark = "Houdini Dark"
+dark = '"Houdini Dark"'
 
 # Store the Houdini UI Theme (Normally Dark or Light)
 houdini_color_scheme = get_houdini_color_scheme(file)
