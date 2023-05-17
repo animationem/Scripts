@@ -1,3 +1,6 @@
+# Creates Horizontal Network Boxes based on the Users Default Color Scheme in the ui.pref file found under the users houdini $HOME directory
+# If you have ideas on how to make this better, I absolutely appreciate the feedback! Email me @ john.d.kesig@gmail.com 
+
 import hou
 import os
 
