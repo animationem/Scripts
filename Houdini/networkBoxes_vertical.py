@@ -65,7 +65,7 @@ dark = '"Houdini Dark"'
 # Store the Houdini UI Theme (Normally Dark or Light)
 houdini_color_scheme = get_houdini_color_scheme(file)
 
-# Create Horizontal Network Boxes, set size, comment, positions, and colors
+# Create Vertical Network Boxes, set size, comment, positions, and colors
 for key in nw_order:
     
     if (houdini_color_scheme == dark):
