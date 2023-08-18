@@ -1,4 +1,5 @@
 #!/bin/bash
+# This is a RHEL based distro script using yum. If you want to make this a Deb based distro using apt-get, switch out every yum in this file 
 
 # Check if sudo is being run on command
 if [ "$EUID" -ne 0 ]
