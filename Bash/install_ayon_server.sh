@@ -58,7 +58,9 @@ which docker &> /dev/null
 if [ $? -ne 0 ]
     then
         echo "Docker is not installed. Installing Docker"
-        yum install docker-ce -y
+        yum config-manaer --add-repo=https://download.docker.com/linux/centos/docker-ce.repo
+        yum update
+        yum install docker-ce docker-ce-cli containerd.io -y
         
         # Start Docker and Enable it so it runs automatically when Host is turned on
         systemctl start docker
