@@ -582,9 +582,9 @@ class OP_Browser:
                     
             if representation[p] == "vdb":
                 vdb_path = init_path[p] + '.$F4.' + representation[p]
-                
+
                 if node_check == None:
-                    geo = obj.createNode('geo', node_name = container_name)
+                    geo = container.createNode('geo', node_name = container_name)
                     
                     ptg = geo.parmTemplateGroup()
                     op_folder = self.parmTemplates(proj, seq, shot[p], family[p], subset[p], version[p], representation[p]) 
@@ -592,9 +592,9 @@ class OP_Browser:
                     geo.setParmTemplateGroup(ptg)
                     
                     vdb = geo.createNode('file', node_name = asset_name)
-                    vdb.parm({"file": vdb_path})
+                    vdb.setParms({"file": vdb_path})
                     
-                    op_node = hou.node(geo)
+                    op_node = container_path
                     
                     self.addToInventory(proj, subset[p], version[p], family[p], representation[p], op_node)
                     
