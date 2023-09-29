@@ -73,6 +73,11 @@ class OP_Browser:
         self.opBrowser.family_combo.currentIndexChanged.connect(self.loadToCameraButtonDisplay)
         
         self.opBrowser.load_to_cam_button.clicked.connect(self.loadToCamera)
+        
+        self.populateInventory()
+        self.opBrowser.delete_assets_button.clicked.connect(self.deleteAssets)
+        
+        self.opBrowser.check_updates_button.clicked.connect(self.checkForInventoryUpdates)
         # FUTURE -- Populate loaded assets table 
     
     def reviewButtonDisplay(self):
@@ -423,7 +428,12 @@ class OP_Browser:
 
     def getSelectedRows(self):
         selected_rows = []
-        selected_items = self.opBrowser.browser_table.selectedItems()
+        selected_items = None
+        if self.opBrowser.browser_table.selectionModel().hasSelection():
+            selected_items = self.opBrowser.browser_table.selectedItems()
+        
+        if self.opBrowser.inventory_table.selectionModel().hasSelection():
+            selected_items = self.opBrowser.inventory_table.selectedItems()
         
         for item in selected_items:
             row = item.row()
@@ -475,11 +485,14 @@ class OP_Browser:
     def loadAsset(self):
 
         init_path, folder_path, representation, shot, subset, family, version = self.getAssetPaths()
-
+        proj = self.comboAttributes()[0]
+        seq = self.comboAttributes()[1]
+        
         obj = hou.node('/obj')
         img = hou.node('/img')
         container = hou.node('/obj/ASSETS')
         img_container = hou.node('/img/COMP')
+        op_node = None
 
         path_count = len(init_path)
         
@@ -489,6 +502,8 @@ class OP_Browser:
                 container = hou.node(op_container)
 
             container_name = f"{shot[p]}_{subset[p]}_v{version[p]:0>3}_CON"
+            container_path = f"/obj/ASSETS/{container_name}"
+            img_container_path = f"/img/{shot[p]}_COMP"
             asset_name = f"{shot[p]}_{subset[p]}_v{version[p]:0>3}"
             node_check = hou.node(f"/obj/ASSETS/{container_name}/{asset_name}")
             
@@ -502,8 +517,18 @@ class OP_Browser:
                     
                 if node_check == None:
                     geo = container.createNode('geo', node_name = container_name)
+
+                    ptg = geo.parmTemplateGroup()
+                    op_folder = self.parmTemplates(proj, seq, shot[p], family[p], subset[p], version[p], representation[p])                    
+                    ptg.append(op_folder)
+                    geo.setParmTemplateGroup(ptg)
+                    
                     file = geo.createNode('file', node_name = asset_name)
                     file.setParms({"file": bgeo_path})
+                    
+                    op_node = container_path
+                    
+                    self.addToInventory(proj, subset[p], version[p], family[p], representation[p], op_node)
                 else:
                     print("Asset is already imported")
         
@@ -512,8 +537,18 @@ class OP_Browser:
             
                 if node_check is None:
                     geo = container.createNode('geo', node_name = container_name)
+                    
+                    ptg = geo.parmTemplateGroup()
+                    op_folder = self.parmTemplates(proj, seq, shot[p], family[p], subset[p], version[p], representation[p]) 
+                    ptg.append(op_folder)
+                    geo.setParmTemplateGroup(ptg)
+                    
                     abc = geo.createNode('alembic', node_name = asset_name)
                     abc.setParms({"fileName": abc_path})
+                    
+                    op_node = container_path
+
+                    self.addToInventory(proj, subset[p], version[p], family[p], representation[p], op_node)
                 else:
                     print("Asset is already imported")
                     
@@ -526,13 +561,22 @@ class OP_Browser:
                 
                 if cam_check is None:
                     abc = obj.createNode('alembicarchive', node_name = asset_name)
+                    
+                    ptg = abc.parmTemplateGroup()
+                    op_folder = self.parmTemplates(proj, seq, shot[p], family[p], subset[p], version[p], representation[p]) 
+                    ptg.append(op_folder)
+                    abc.setParmTemplateGroup(ptg)
+                    
                     abc.setParms({"fileName": abc_path})
                     abc.parm('/obj/' + str(abc) + '/buildHierarchy').pressButton()
                     
                     cam_path = f"{obj}/{asset_name}/{shot[p]}_{subset[p]}_01__{subset[p]}/{shot[p]}_{subset[p]}_01__{subset[p]}Shape"
                     cam = hou.node(cam_path)
-                    print(cam)
                     cam.setParms({"resx": res_width, "resy": res_height})
+                    
+                    op_node = container_path
+                    
+                    self.addToInventory(proj, subset[p], version[p], family[p], representation[p], op_node)
                 else:
                     print("Camera is already imported")
                     
@@ -541,9 +585,19 @@ class OP_Browser:
                 
                 if node_check == None:
                     geo = obj.createNode('geo', node_name = container_name)
+                    
+                    ptg = geo.parmTemplateGroup()
+                    op_folder = self.parmTemplates(proj, seq, shot[p], family[p], subset[p], version[p], representation[p]) 
+                    ptg.append(op_folder)
+                    geo.setParmTemplateGroup(ptg)
+                    
                     vdb = geo.createNode('file', node_name = asset_name)
                     vdb.parm({"file": vdb_path})
-
+                    
+                    op_node = hou.node(geo)
+                    
+                    self.addToInventory(proj, subset[p], version[p], family[p], representation[p], op_node)
+                    
             if representation[p] == "exr" or representation[p] == 'jpg' or representation[p] == 'png':
                 file_count = self.countFiles(folder_path[p], representation[p])
                 if file_count > 1:
@@ -560,14 +614,105 @@ class OP_Browser:
                 if cop_check == None:
                     img = op_cop_container.createNode('file', node_name = asset_name)
                     img.setParms({"filename1": img_path})
+                    
+                    ptg = img.parmTemplateGroup()
+                    op_folder = self.parmTemplates(proj, seq, shot[p], family[p], subset[p], version[p], representation[p]) 
+                    ptg.append(op_folder)
+                    img.setParmTemplateGroup(ptg)
+                    
+                    op_node = img_container_path
+                    
+                    self.addToInventory(proj, subset[p], version[p], family[p], representation[p], op_node)
                 else:
                     print("Image Sequence is already imported")
             
             self.changeStatus()
-
             self.checkForUpdate()
-
             
+            
+    def addToInventory(self, proj, subset, version, family, representation, op_node):
+        self.opBrowser.inventory_table.resizeColumnToContents(0)
+        
+        row_count = self.opBrowser.inventory_table.rowCount()
+        if row_count == 0:
+            row = 0
+        if row_count > 0:
+            row = row_count
+
+        self.opBrowser.inventory_table.insertRow(row)
+        
+        # STATUS ----------------
+        status_widget = QtWidgets.QWidget()
+        status_widget.setStyleSheet("background-color: rgb(60, 233, 186);")
+        self.opBrowser.inventory_table.setCellWidget(row, 0, status_widget)
+        # -----------------------
+        
+        # PROJECT ---------------
+        project_item = QtWidgets.QTableWidgetItem(proj)
+        self.opBrowser.inventory_table.setItem(row, 1, project_item)
+        self.opBrowser.inventory_table.resizeColumnToContents(1)
+        # -----------------------
+        
+        # NAME ------------------
+        subset_item = QtWidgets.QTableWidgetItem(subset)
+        self.opBrowser.inventory_table.setItem(row, 2, subset_item)
+        self.opBrowser.inventory_table.resizeColumnToContents(2)
+        # -----------------------
+        
+        # VERSION ---------------
+        version_item = QtWidgets.QTableWidgetItem(f"v{version:0>3}")
+        self.opBrowser.inventory_table.setItem(row, 3, version_item)
+        self.opBrowser.inventory_table.resizeColumnToContents(3)
+        # -----------------------
+        
+        # FAMILY ----------------
+        family_item = QtWidgets.QTableWidgetItem(family)
+        self.opBrowser.inventory_table.setItem(row, 4, family_item)
+        self.opBrowser.inventory_table.resizeColumnToContents(4)
+        # -----------------------
+        
+        # REPRESENTATION --------
+        rep_item = QtWidgets.QTableWidgetItem(representation)
+        self.opBrowser.inventory_table.setItem(row, 5, rep_item)
+        self.opBrowser.inventory_table.resizeColumnToContents(5)
+        # -----------------------
+        
+        # NODE PATH -------------
+        node_item = QtWidgets.QTableWidgetItem(op_node)
+        self.opBrowser.inventory_table.setItem(row, 6, node_item)
+        self.opBrowser.inventory_table.resizeColumnToContents(6)
+        # -----------------------
+    
+        
+    def populateInventory(self):
+        assets = hou.node('/obj/ASSETS')
+        children = assets.children()
+        
+        
+        if len(children) > 0:
+            for c in children:
+                proj = c.evalParm("proj")
+                subset = c.evalParm("subset")
+                version = c.evalParm("version")
+                family = c.evalParm("family")
+                representation = c.evalParm("representation")
+                node = c.path()
+
+                self.addToInventory(proj, subset, version, family, representation, node)
+            
+        
+    def deleteAssets(self):
+        selected_rows = self.getSelectedRows()
+        
+        for row in selected_rows:
+            if row >= 0:
+                node_path = self.opBrowser.inventory_table.item(row, 6).text()
+                node = hou.node(node_path)
+                hou.Node.destroy(node)
+                
+                self.opBrowser.inventory_table.removeRow(row)
+                
+        
     def reviewAsset(self):
         init_path = self.getAssetPaths()[0] 
         folder_path = self.getAssetPaths()[1]
@@ -595,7 +740,19 @@ class OP_Browser:
                     img_seq_path = init_path[p] + '.%04d.' + representation[p]
                     subprocess.Popen([rv, img_seq_path])
 
-
+    def parmTemplates(self, proj, seq, shot, family, subset, version, representation):
+        
+        op_folder = hou.FolderParmTemplate(name='op_data', label='OP Data', folder_type=hou.folderType.Tabs, is_hidden=False)
+        op_folder.addParmTemplate(hou.StringParmTemplate('proj', 'Project', default_value=([proj]), num_components = 1, string_type=hou.stringParmType.Regular))
+        op_folder.addParmTemplate(hou.StringParmTemplate('seq', 'Sequence', default_value=([seq]), num_components = 1, string_type = hou.stringParmType.Regular))
+        op_folder.addParmTemplate(hou.StringParmTemplate('shot', 'shot', default_value=([shot]), num_components = 1, string_type = hou.stringParmType.Regular))
+        op_folder.addParmTemplate(hou.StringParmTemplate('family', 'family', default_value=([family]), num_components = 1, string_type = hou.stringParmType.Regular))
+        op_folder.addParmTemplate(hou.StringParmTemplate('subset', 'subset', default_value=([subset]), num_components = 1, string_type = hou.stringParmType.Regular))
+        op_folder.addParmTemplate(hou.StringParmTemplate('version', 'Version', default_value=([version]), num_components = 1, string_type = hou.stringParmType.Regular))
+        op_folder.addParmTemplate(hou.StringParmTemplate('representation', 'Representation', default_value=([representation]), num_components = 1, string_type = hou.stringParmType.Regular))
+        
+        return op_folder
+        
     def loadToCamera(self):
         init_path = self.getAssetPaths()[0]
         representation = self.getAssetPaths()[2]
@@ -610,20 +767,14 @@ class OP_Browser:
                 
             
     def changeStatus(self):
-        selected_rows = []
-        selected_items = self.opBrowser.browser_table.selectedItems()
+
+        selected_rows = self.getSelectedRows()
         
-        for item in selected_items:
-            row = item.row()
-            if row not in selected_rows:
-                selected_rows.append(row)
-                set(selected_rows)
-                
-        # Status Color for latest version
-        status_widget = QtWidgets.QWidget()
-        status_widget.setStyleSheet("background-color: rgb(60, 233, 186);")
-        self.opBrowser.browser_table.setCellWidget(row, 0, status_widget)
-        
+        for row in selected_rows:
+            status_widget = QtWidgets.QWidget()
+            status_widget.setStyleSheet("background-color: rgb(60, 233, 186);")
+            self.opBrowser.browser_table.setCellWidget(row, 0, status_widget)
+            
         
     def checkForUpdate(self):
         for r in range(self.opBrowser.browser_table.rowCount()):
@@ -634,7 +785,6 @@ class OP_Browser:
             start_frame = int(float(frames[0]))
             end_frame = int(float(frames[1]))
             frame_count = end_frame - start_frame
-
             version_count = self.opBrowser.browser_table.cellWidget(row, 2).count()
             version_list = []
             
@@ -642,8 +792,8 @@ class OP_Browser:
                 version_list.append(v + 1)
             
             max_version = str(max(version_list))
-
-            container_check = hou.node('obj/ASSETS/' + shot + '_' + family+name + '_CON')
+            container_path = f"/obj/ASSETS/{shot}_{family+name}_v{version:0>3}_CON"
+            container_check = hou.node(container_path)
             
             status_widget = QtWidgets.QWidget()
             
@@ -656,9 +806,22 @@ class OP_Browser:
             
             if container_check is None:
                     status_widget.setStyleSheet("")
-            
+                    
             self.opBrowser.browser_table.setCellWidget(row, 0, status_widget)
 
+            
+    def checkForInventoryUpdates(self):
+        for r in range(self.opBrowser.inventory_table.rowCount()):
+            row = r
+            
+            path = self.opBrowser.inventory_table.item(row, 6).text()
+            check_path = hou.node(path)
+            
+            status_widget = QtWidgets.QWidget()
+
+            if check_path == None:
+                status_widget.setStyleSheet("background-color: rgb(200,50,50);")
+                self.opBrowser.inventory_table.setCellWidget(row, 0, status_widget)
 
     def comboAttributes(self):
         
